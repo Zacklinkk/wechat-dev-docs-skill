@@ -39,10 +39,12 @@ def normalize_url(target: str) -> str:
         url = BASE + target
     else:
         url = BASE + "/" + target
-    host = urlparse(url).netloc
-    if host != ALLOWED_HOST:
+    parsed = urlparse(url)
+    if parsed.scheme != "https":
+        raise ValueError(f"Only https:// URLs are accepted; got {parsed.scheme!r}.")
+    if parsed.netloc != ALLOWED_HOST:
         raise ValueError(
-            f"Refusing to fetch non-official host {host!r}. Only {ALLOWED_HOST} is allowed."
+            f"Refusing to fetch non-official host {parsed.netloc!r}. Only {ALLOWED_HOST} is allowed."
         )
     return url
 
@@ -65,12 +67,12 @@ def html_to_markdown(html: str, base_url: str) -> str:
     for img in node.find_all("img", src=True):
         img["src"] = urljoin(base_url, img["src"])
     markdown = md(str(node), heading_style="ATX")
-    # collapse runs of >2 blank lines
+    # collapse multiple consecutive blank lines to at most one
     out, blank = [], 0
     for line in (ln.rstrip() for ln in markdown.splitlines()):
         if line == "":
             blank += 1
-            if blank <= 2:
+            if blank <= 1:
                 out.append(line)
         else:
             blank = 0
@@ -83,6 +85,9 @@ def fetch_doc(target: str, timeout: float = 30.0) -> str:
     url = normalize_url(target)
     resp = httpx.get(url, headers={"User-Agent": UA}, timeout=timeout, follow_redirects=True)
     resp.raise_for_status()
+    final_host = urlparse(str(resp.url)).netloc
+    if final_host != ALLOWED_HOST:
+        raise ValueError(f"Redirect landed on non-official host {final_host!r}.")
     title_tag = BeautifulSoup(resp.text, "html.parser").find("title")
     title = title_tag.get_text(strip=True) if title_tag else url
     body = html_to_markdown(resp.text, url)

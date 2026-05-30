@@ -29,6 +29,11 @@ def test_normalize_url_rejects_foreign_host():
         fetch_doc.normalize_url("https://evil.example.com/x")
 
 
+def test_normalize_url_rejects_http_scheme():
+    with pytest.raises(ValueError):
+        fetch_doc.normalize_url("http://developers.weixin.qq.com/x")
+
+
 def test_html_to_markdown_extracts_content_strips_chrome_absolutizes_links():
     html = """
     <html><body>
