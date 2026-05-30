@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 
 BASE = "https://developers.weixin.qq.com"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) wechat-dev-docs-skill-build/1.0"
+_DOMAIN_CN = {"miniprogram": "小程序", "minigame": "小游戏"}
 
 # Verified top-level section roots. Each root's SSR HTML carries that section's full sidebar.
 SECTIONS = {
@@ -52,6 +53,7 @@ SECTIONS = {
 def extract_section_links(html: str, prefix: str) -> list[tuple[str, str]]:
     """Return [(href_without_anchor, title)] for sidebar links under `prefix`, de-duped."""
     soup = BeautifulSoup(html, "html.parser")
+    # Fall back to the whole document if no sidebar widget is present
     container = soup.select_one(".sidebar") or soup
     seen: dict[str, str] = {}
     for a in container.find_all("a", href=True):
@@ -74,12 +76,19 @@ def fetch(path: str) -> str:
 def build(domain: str) -> str:
     cfg = SECTIONS[domain]
     prefix = cfg["prefix"]
-    lines = [f"# 微信{'小程序' if domain == 'miniprogram' else '小游戏'}文档导航地图 ({domain})", ""]
+    lines = [f"# 微信{_DOMAIN_CN[domain]}文档导航地图 ({domain})", ""]
     lines.append("> 由 tools/build/build_maps.py 生成。每条目为官方页面标题 + 深链。")
     lines.append("> 需要某页全文时:`uv run <skill>/tools/fetch_doc.py <url>`。正文版权归腾讯。")
     lines.append("")
+    def _fetch_root(root: tuple[str, str]) -> str:
+        heading, path = root
+        try:
+            return fetch(path)
+        except Exception as exc:
+            raise RuntimeError(f"Failed to fetch {heading!r} ({path}): {exc}") from exc
+
     with ThreadPoolExecutor(max_workers=8) as pool:
-        htmls = list(pool.map(lambda r: fetch(r[1]), cfg["roots"]))
+        htmls = list(pool.map(_fetch_root, cfg["roots"]))
     global_seen: set[str] = set()
     for (heading, _root), html in zip(cfg["roots"], htmls):
         links = extract_section_links(html, prefix)

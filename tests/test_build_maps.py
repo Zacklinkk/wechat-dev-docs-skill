@@ -1,6 +1,7 @@
 import importlib.util
 import pathlib
 
+# Load the PEP723 script (lives outside any package) as a module for unit testing.
 _PATH = pathlib.Path(__file__).resolve().parents[1] / "tools" / "build" / "build_maps.py"
 _spec = importlib.util.spec_from_file_location("build_maps", _PATH)
 build_maps = importlib.util.module_from_spec(_spec)
