@@ -107,6 +107,10 @@ def build(domain: str) -> str:
 
 
 def main(argv: list[str]) -> int:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")  # ensure UTF-8 regardless of shell codepage
+    except (AttributeError, ValueError):
+        pass
     if len(argv) < 2 or argv[1] not in SECTIONS:
         print(f"Usage: uv run build_maps.py [{'|'.join(SECTIONS)}]", file=sys.stderr)
         return 2
