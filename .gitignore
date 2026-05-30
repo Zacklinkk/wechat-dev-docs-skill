@@ -4,3 +4,10 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 *.log
+.env
+.idea/
+.vscode/
+Thumbs.db
+*.egg-info/
+dist/
+uv.lock
