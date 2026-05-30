@@ -39,12 +39,13 @@ SECTIONS = {
     },
     "minigame": {
         "prefix": "/minigame/dev/",
-        # Seed with the guide + reference/api/component roots; refined in Task 4 Step 1.
+        # Verified against live site (Task 4 Step 1): guide/ api/ api-backend/ wxcloud/ reference/
         "roots": [
             ("指南 Guide", "/minigame/dev/guide/"),
             ("API", "/minigame/dev/api/"),
-            ("组件 Components", "/minigame/dev/reference/components/"),
-            ("引擎 Reference", "/minigame/dev/reference/"),
+            ("服务端 API Backend", "/minigame/dev/api-backend/"),
+            ("云开发 CloudBase", "/minigame/dev/wxcloud/"),
+            ("运行时参考 Reference", "/minigame/dev/reference/"),
         ],
     },
 }
