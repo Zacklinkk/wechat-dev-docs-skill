@@ -71,3 +71,28 @@ def test_links_from_map_filters_by_substring(tmp_path, monkeypatch):
     api = build_reference.links_from_map("/api/")
     assert comp == ["https://developers.weixin.qq.com/miniprogram/dev/component/view.html"]
     assert api == ["https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html"]
+
+
+def test_links_from_reads_arbitrary_map(tmp_path):
+    m = tmp_path / "minigame.md"
+    m.write_text(
+        "- [a](https://developers.weixin.qq.com/minigame/dev/api/render/canvas/wx.createCanvas.html)\n"
+        "- [b](https://developers.weixin.qq.com/miniprogram/dev/server/getting_started/api_signature.html)\n",
+        encoding="utf-8",
+    )
+    mg = build_reference.links_from(m, "/minigame/dev/api/")
+    sv = build_reference.links_from(m, "/miniprogram/dev/server/")
+    assert mg == ["https://developers.weixin.qq.com/minigame/dev/api/render/canvas/wx.createCanvas.html"]
+    assert sv == ["https://developers.weixin.qq.com/miniprogram/dev/server/getting_started/api_signature.html"]
+
+
+def test_groups_for_extracts_namespaces_including_underscores(tmp_path):
+    m = tmp_path / "map.md"
+    m.write_text(
+        "- [a](https://developers.weixin.qq.com/miniprogram/dev/server/getting_started/x.html)\n"
+        "- [b](https://developers.weixin.qq.com/miniprogram/dev/server/message/y.html)\n"
+        "- [c](https://developers.weixin.qq.com/miniprogram/dev/server/getting_started/z.html)\n",
+        encoding="utf-8",
+    )
+    groups = build_reference.groups_for(m, "/miniprogram/dev/server/")
+    assert groups == ["getting_started", "message"]

@@ -26,7 +26,8 @@ from bs4 import BeautifulSoup
 from markdownify import markdownify as md
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) wechat-dev-docs-skill-build/1.0"
-MAP_FILE = pathlib.Path(__file__).resolve().parents[2] / "skill" / "wechat-dev-docs" / "maps" / "miniprogram.md"
+MAP_DIR = pathlib.Path(__file__).resolve().parents[2] / "skill" / "wechat-dev-docs" / "maps"
+MAP_FILE = MAP_DIR / "miniprogram.md"  # default; kept for back-compat
 DROP_SELECTORS = ["script", "style", "nav", "header", "footer", "aside", ".sidebar", ".navbar"]
 
 
@@ -69,11 +70,32 @@ def extract_reference(html: str, url: str) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def links_from_map(substring: str) -> list[str]:
-    """Official .html URLs from the Phase-1 map whose path contains `substring`, de-duped, in order."""
-    text = MAP_FILE.read_text(encoding="utf-8")
+def links_from(map_path, substring: str) -> list[str]:
+    """Official .html URLs from `map_path` whose path contains `substring`, de-duped, in order."""
+    text = pathlib.Path(map_path).read_text(encoding="utf-8")
     urls = re.findall(r"\]\((https://developers\.weixin\.qq\.com[^)]+)\)", text)
     return [u for u in dict.fromkeys(urls) if substring in u and u.endswith(".html")]
+
+
+def groups_for(map_path, base_prefix: str) -> list[str]:
+    """Namespaces = the path segment immediately after `base_prefix`, in order, de-duped."""
+    pat = re.compile(re.escape(base_prefix) + r"([a-z0-9_-]+)/")
+    groups: list[str] = []
+    for u in links_from(map_path, base_prefix):
+        m = pat.search(u)
+        if m and m.group(1) not in groups:
+            groups.append(m.group(1))
+    return groups
+
+
+def _resolve_map(name_or_path: str) -> pathlib.Path:
+    """Accept a map name ('miniprogram'/'minigame') or an explicit path."""
+    p = pathlib.Path(name_or_path)
+    return p if p.exists() else (MAP_DIR / f"{name_or_path}.md")
+
+
+def links_from_map(substring: str) -> list[str]:
+    return links_from(MAP_FILE, substring)
 
 
 def _fetch(url: str) -> str:
@@ -106,13 +128,7 @@ def _build_for(urls: list[str], heading: str) -> str:
 
 
 def api_groups() -> list[str]:
-    """Discover API namespaces (the path segment after /api/)."""
-    groups = []
-    for u in links_from_map("/miniprogram/dev/api/"):
-        m = re.search(r"/api/([a-z0-9-]+)/", u)
-        if m and m.group(1) not in groups:
-            groups.append(m.group(1))
-    return groups
+    return groups_for(MAP_FILE, "/miniprogram/dev/api/")
 
 
 def main(argv: list[str]) -> int:
@@ -132,7 +148,16 @@ def main(argv: list[str]) -> int:
         urls = links_from_map(f"/miniprogram/dev/api/{group}/")
         print(_build_for(urls, f"微信小程序 API 结构化参考 — {group}"))
         return 0
-    print("Usage: uv run build_reference.py [components | api-groups | api <group>]", file=sys.stderr)
+    if len(argv) >= 4 and argv[1] == "groups":
+        print("\n".join(groups_for(_resolve_map(argv[2]), argv[3])))
+        return 0
+    if len(argv) >= 6 and argv[1] == "build":
+        map_path = _resolve_map(argv[2])
+        base, group, heading = argv[3], argv[4], " ".join(argv[5:])
+        urls = links_from(map_path, f"{base}{group}/")
+        print(_build_for(urls, heading))
+        return 0
+    print("Usage: uv run build_reference.py [components | api-groups | api <group> | groups <map> <prefix> | build <map> <prefix> <group> <heading>]", file=sys.stderr)
     return 2
 
 
