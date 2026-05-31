@@ -79,7 +79,7 @@ def links_from(map_path, substring: str) -> list[str]:
 
 def groups_for(map_path, base_prefix: str) -> list[str]:
     """Namespaces = the path segment immediately after `base_prefix`, in order, de-duped."""
-    pat = re.compile(re.escape(base_prefix) + r"([a-z0-9_-]+)/")
+    pat = re.compile(re.escape(base_prefix) + r"([A-Za-z0-9_-]+)/")
     groups: list[str] = []
     for u in links_from(map_path, base_prefix):
         m = pat.search(u)
