@@ -7,7 +7,7 @@ description: Use when working on WeChat mini-programs (小程序) or mini-games 
 
 Agent-readable access to the official WeChat **mini-program** and **mini-game** developer
 documentation. The repo stores complete **navigation maps** (every page title + official
-deep link); full prose is fetched live on demand. Content © Tencent; official docs are the
+deep link) **and structured reference (component/API facts: names, types, params, return values)**; full prose is fetched live on demand. Content © Tencent; official docs are the
 source of truth.
 
 ## How to use this skill
@@ -17,7 +17,12 @@ source of truth.
    - Mini-game: `maps/minigame.md`
    Each entry is `- [title](official-url)`.
 
-2. **Read the full page** when you need the actual prose, parameters, or examples:
+2. **Check the structured reference first** (faster than fetching — no network call). For mini-program:
+   - Components: `reference/miniprogram/components.md` — name, brief, attribute/event tables.
+   - APIs: `reference/miniprogram/api/<namespace>.md` (index: `reference/miniprogram/api/README.md`) — signature, parameter & return tables.
+   These hold the facts (names/types/defaults/params) you need most of the time. Fall through to fetching only when you need full prose, examples, or a page not yet in the reference (e.g. mini-game pages).
+
+3. **Read the full page** when you need the actual prose, parameters, or examples:
 
    ```bash
    uv run <skill-dir>/tools/fetch_doc.py <official-url>
@@ -33,7 +38,7 @@ source of truth.
    straight into your reasoning. You can pass either a full URL or a path like
    `/miniprogram/dev/api/base/wx.canIUse.html`.
 
-3. **Cite the official URL** in your answer so the user can verify against the source.
+4. **Cite the official URL** in your answer so the user can verify against the source.
 
 ## Notes
 
