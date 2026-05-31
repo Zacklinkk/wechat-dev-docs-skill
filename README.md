@@ -1,5 +1,9 @@
 # wechat-dev-docs · 让 AI 读懂微信小程序/小游戏文档
 
+[![CI](https://github.com/Zacklinkk/wechat-dev-docs-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Zacklinkk/wechat-dev-docs-skill/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Claude Skill](https://img.shields.io/badge/Claude-Skill-8A63D2.svg)](https://docs.claude.com/en/docs/claude-code/skills)
+
 > **Make WeChat mini-program & mini-game docs agent-readable.**
 
 微信官方开发文档是为**人**写的:单页应用、深层导航、正文混在 UI 里,AI 几乎没法整页喂、没法快速检索。
