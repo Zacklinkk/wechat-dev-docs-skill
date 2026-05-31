@@ -25,7 +25,6 @@ import httpx
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
 
-BASE = "https://developers.weixin.qq.com"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) wechat-dev-docs-skill-build/1.0"
 MAP_FILE = pathlib.Path(__file__).resolve().parents[2] / "skill" / "wechat-dev-docs" / "maps" / "miniprogram.md"
 DROP_SELECTORS = ["script", "style", "nav", "header", "footer", "aside", ".sidebar", ".navbar"]
@@ -49,7 +48,10 @@ def extract_reference(html: str, url: str) -> str:
             el.decompose()
     h1 = node.find("h1")
     title = clean_heading(h1.get_text()) if h1 else url
-    first_p = node.find("p")
+    first_p = next(
+        (p for p in node.find_all("p") if p.find_parent("table") is None),
+        None,
+    )
     brief = " ".join(first_p.get_text(strip=True).split()) if first_p else ""
 
     lines = [f"### {title}", ""]
@@ -58,6 +60,8 @@ def extract_reference(html: str, url: str) -> str:
     lines += [f"官方 / Source: {url}", ""]
     for table in node.find_all("table"):
         prev = table.find_previous(["h2", "h3"])
+        if prev is not None and not any(parent is node for parent in prev.parents):
+            prev = None  # heading escaped the content node; ignore
         label = clean_heading(prev.get_text()) if prev else ""
         if label:
             lines += [f"**{label}**", ""]
@@ -78,7 +82,7 @@ def _fetch(url: str) -> str:
     return resp.text
 
 
-def _safe_fetch(url: str):
+def _safe_fetch(url: str) -> str | None:
     try:
         return _fetch(url)
     except Exception as exc:  # one bad page must not kill the whole run

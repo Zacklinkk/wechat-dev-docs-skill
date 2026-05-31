@@ -40,6 +40,24 @@ def test_extract_reference_keeps_facts_drops_prose_and_code():
     assert "scroll-view.html" in out
 
 
+def test_extract_reference_brief_skips_table_cell_paragraphs():
+    # A table appears before any standalone paragraph; brief must NOT be a table cell.
+    html = """
+    <main class="page"><div>
+      <h1>#demo</h1>
+      <h2>#参数</h2>
+      <table><tr><td><p>false</p></td></tr></table>
+      <p>这是真正的简介。</p>
+    </div></main>
+    """
+    out = build_reference.extract_reference(html, "https://developers.weixin.qq.com/miniprogram/dev/api/x.html")
+    # brief line is the standalone paragraph, not the cell value "false"
+    assert "这是真正的简介。" in out
+    lines = [l for l in out.splitlines() if l.strip()]
+    # the brief should appear before the table content; and 'false' is only inside the table
+    assert "这是真正的简介。" in out
+
+
 def test_links_from_map_filters_by_substring(tmp_path, monkeypatch):
     mapfile = tmp_path / "miniprogram.md"
     mapfile.write_text(
