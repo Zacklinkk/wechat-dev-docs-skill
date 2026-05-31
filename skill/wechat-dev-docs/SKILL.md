@@ -17,10 +17,13 @@ source of truth.
    - Mini-game: `maps/minigame.md`
    Each entry is `- [title](official-url)`.
 
-2. **Check the structured reference first** (faster than fetching — no network call). For mini-program:
-   - Components: `reference/miniprogram/components.md` — name, brief, attribute/event tables.
-   - APIs: `reference/miniprogram/api/<namespace>.md` (index: `reference/miniprogram/api/README.md`) — signature, parameter & return tables.
-   These hold the facts (names/types/defaults/params) you need most of the time. Fall through to fetching only when you need full prose, examples, or a page not yet in the reference (e.g. mini-game pages).
+2. **Check the structured reference first** (faster than fetching — no network call):
+   - Mini-program components: `reference/miniprogram/components.md`
+   - Mini-program APIs: `reference/miniprogram/api/<namespace>.md` (index: `reference/miniprogram/api/README.md`)
+   - Mini-program server APIs: `reference/miniprogram/server/<group>.md` (index: `reference/miniprogram/server/README.md`)
+   - Mini-game APIs: `reference/minigame/api/<namespace>.md` (index: `reference/minigame/api/README.md`)
+   - Core concepts — where to look: `reference/concepts.md`
+   These hold the facts (names/types/params/signatures) you need most of the time. Fall through to fetching for full prose/examples, or for cloud (云开发) pages, which are guide-heavy and covered via the map + fetch.
 
 3. **Read the full page** when you need the actual prose, parameters, or examples:
 
